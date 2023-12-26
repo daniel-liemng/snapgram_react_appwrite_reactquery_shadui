@@ -100,9 +100,10 @@ export const signOutAccount = async () => {
   }
 };
 
-// POST
+// CREATE POST
 export const createPost = async (post: INewPost) => {
   try {
+    // Upload image to  storage
     const uploadedFile = await uploadFile(post.file[0]);
 
     if (!uploadedFile) throw Error;

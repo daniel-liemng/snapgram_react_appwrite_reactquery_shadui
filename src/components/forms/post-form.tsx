@@ -71,6 +71,7 @@ const PostForm = ({ post }: PostFormProps) => {
       return toast.error('Please try again');
     }
 
+    toast.success('Post created');
     navigate('/');
   };
 

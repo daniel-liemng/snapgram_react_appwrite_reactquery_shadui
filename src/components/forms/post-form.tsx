@@ -15,7 +15,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '../ui/textarea';
 import FileUploader from '../shared/file-uploader';
 import { Models } from 'appwrite';
-import { useCreatePostMutation } from '@/lib/react-query/mutations';
+import {
+  useCreatePostMutation,
+  useUpdatePostMutation,
+} from '@/lib/react-query/mutations';
 import { useAuthContext } from '@/context/auth-context';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -44,11 +47,14 @@ const formSchema = z.object({
 
 interface PostFormProps {
   post?: Models.Document;
+  action: 'Create' | 'Update';
 }
 
-const PostForm = ({ post }: PostFormProps) => {
+const PostForm = ({ post, action }: PostFormProps) => {
   const { mutateAsync: createPost, isPending: isLoadingCreate } =
     useCreatePostMutation();
+  const { mutateAsync: updatePost, isPending: isLoadingUpdate } =
+    useUpdatePostMutation();
 
   const { user } = useAuthContext();
 
@@ -65,13 +71,31 @@ const PostForm = ({ post }: PostFormProps) => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (post && action === 'Update') {
+      // UPDATE POST
+      const updatedPost = await updatePost({
+        ...values,
+        postId: post.$id,
+        imageId: post.imageId,
+        imageUrl: post.imageUrl,
+      });
+
+      if (!updatedPost) {
+        return toast.error('Please try again');
+      }
+
+      toast.success('Post Updated');
+      return navigate(`/posts/${post.$id}`);
+    }
+
+    // CREATE POST
     const newPost = await createPost({ ...values, userId: user.id });
 
     if (!newPost) {
       return toast.error('Please try again');
     }
 
-    toast.success('Post created');
+    toast.success('Post Created');
     navigate('/');
   };
 
@@ -156,14 +180,15 @@ const PostForm = ({ post }: PostFormProps) => {
           </Button>
           <Button
             type='submit'
+            disabled={isLoadingCreate || isLoadingUpdate}
             className='shad-button_primary whitespace-nowrap'
           >
-            {isLoadingCreate ? (
+            {isLoadingCreate || isLoadingUpdate ? (
               <div className='flex items-center justify-center gap-2'>
                 <Loader /> Loading...
               </div>
             ) : (
-              'Create'
+              `${action} Post`
             )}
           </Button>
         </div>

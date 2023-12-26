@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import './global.css';
+import './globals.css';
 import SignInForm from './_auth/forms/signin-form';
 import SignUpForm from './_auth/forms/signup-form';
 import { HomePage } from './_root/pages';

@@ -8,8 +8,6 @@ const EditPostPage = () => {
 
   const { data: post, isPending } = useGetPostByIdQuery(postId as string);
 
-  console.log('444', post);
-
   if (isPending) {
     return <Loader />;
   }

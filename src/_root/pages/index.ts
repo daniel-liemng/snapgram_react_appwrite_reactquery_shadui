@@ -1,1 +1,9 @@
 export { default as HomePage } from './home-page';
+export { default as ExplorePage } from './explore-page';
+export { default as SavedPage } from './saved-page';
+export { default as AllUsersPage } from './all-users-page';
+export { default as CreatePostPage } from './create-post-page';
+export { default as EditPostPage } from './edit-post-page';
+export { default as PostDetailsPage } from './post-details-page';
+export { default as ProfilePage } from './profile-page';
+export { default as UpdateProfilePage } from './update-profile-page';

@@ -13,8 +13,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import Loader from '@/components/shared/loader';
-import { Link } from 'react-router-dom';
-import { createUserAccount } from '@/lib/appwrite/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import {
+  useCreateUserAccountMutation,
+  useSignInAccountMutation,
+} from '@/lib/react-query/mutations';
+import { useAuthContext } from '@/context/auth-context';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Too short' }),
@@ -26,7 +31,14 @@ const formSchema = z.object({
 });
 
 const SignUpForm = () => {
-  const isLoading = false;
+  const { checkAuthUser } = useAuthContext();
+
+  const navigate = useNavigate();
+
+  const { mutateAsync: createUserAccount, isPending: isCreatingUser } =
+    useCreateUserAccountMutation();
+
+  const { mutateAsync: signInAccount } = useSignInAccountMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,11 +51,30 @@ const SignUpForm = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-
     const newUser = await createUserAccount(values);
 
-    console.log('777', newUser);
+    if (!newUser) {
+      return toast.error('Sign up failed. Please try again.');
+    }
+
+    const session = await signInAccount({
+      email: values.email,
+      password: values.password,
+    });
+
+    if (!session) {
+      return toast.error('Sign in failed. Please try again.');
+    }
+
+    const isLoggedIn = await checkAuthUser();
+
+    if (isLoggedIn) {
+      form.reset();
+
+      navigate('/');
+    } else {
+      return toast.error('Sign up failed. Please try again.');
+    }
   };
 
   return (
@@ -119,7 +150,7 @@ const SignUpForm = () => {
           />
 
           <Button type='submit' className='shad-button_primary'>
-            {isLoading ? (
+            {isCreatingUser ? (
               <div className='flex items-center justify-center gap-2'>
                 <Loader /> Loading...
               </div>
